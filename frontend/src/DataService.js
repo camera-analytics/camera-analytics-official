@@ -18,6 +18,14 @@ class DataService {
       })
     })
   }
+
+  customerPositions() {
+    return new Promise((success, fail) => {
+      fetch(`${this._BASE_URL}/positions`).then(response => {
+        response.json().then(success)
+      })
+    })
+  }
 }
 
 export default DataService
