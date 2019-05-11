@@ -104,9 +104,8 @@ class Functions extends Component {
     }
 
     let updatePositions = () => {
-      dataService.customerPositions().then(position => {
-        this.state.customerPositions.push({x: position[0],
-            y: position[1]})
+      dataService.customerPositions().then(positionList => {
+        this.state.customerPositions = positionList // x,y by numPositions list
         this.setState(this.state)
       })
     }
@@ -168,7 +167,6 @@ class Functions extends Component {
             </Column>
 
             <Column>
-            // Heat map
             </Column>
           </Columns>
         </AppContainer>
