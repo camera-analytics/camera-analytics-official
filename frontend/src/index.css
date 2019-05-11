@@ -6,3 +6,15 @@ body {
   font-family: 'Lato', sans-serif;
   background: #f0f4fe;
 }
+
+/* Heatmap stuff */
+#heatmapContainerWrapper {
+  width: 500px; height:100%; position:absolute;
+  /* background: url(austria.svg); */
+}
+#heatmapContainer { width:100%; height:100%;}
+#heatmapLegend { background:white; position:absolute; bottom:0; right:0; padding:10px; }
+#min { float:left; }
+#max { float:right; }
+/* h1 { position:absolute; background:black; color:white; padding:10px; font-weight:200;} */
+#all-examples-info { position:absolute; background:white; font-size:16px; padding:20px; top:100px; width:350px; line-height:150%; border:1px solid rgba(0,0,0,.2);}

@@ -74,6 +74,9 @@ class Functions extends Component {
       totalCustomerCount: {
         count: 100
       },
+      customerPositions: {
+        positions: [],
+      },
       maxCount: 0
     }
     let dataService = new DataService()
@@ -100,13 +103,24 @@ class Functions extends Component {
       })
     }
 
+    let updatePositions = () => {
+      dataService.customerPositions().then(position => {
+        this.state.customerPositions.push({x: position[0],
+            y: position[1]})
+        this.setState(this.state)
+      })
+    }
+
     updateCurrentCustomerCount()
 
     updateCustomerCounts()
 
+    updatePositions()
+
     setInterval(() => {
       updateCurrentCustomerCount()
       updateCustomerCounts()
+      updatePositions()
     }, 1000)
   }
 
@@ -151,6 +165,10 @@ class Functions extends Component {
                 <Data sz="3rem">${Math.floor(1000 / this.state.maxCount)}</Data>
                 <Data sz="1em">$1000/{this.state.maxCount}</Data>
               </Card>
+            </Column>
+
+            <Column>
+            // Heat map
             </Column>
           </Columns>
         </AppContainer>
