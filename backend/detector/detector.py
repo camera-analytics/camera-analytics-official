@@ -40,7 +40,6 @@ PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 NUM_CLASSES = 90
 
 # ## Download Model
-
 if not os.path.exists(MODEL_NAME + '/frozen_inference_graph.pb'):
     print('Downloading the model')
     opener = urllib.request.URLopener()
