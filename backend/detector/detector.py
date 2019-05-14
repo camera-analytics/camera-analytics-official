@@ -89,7 +89,7 @@ with detection_graph.as_default():
             if not ret:
                 break
 
-            cv2.imwrite('test.jpg', image_np)
+            cv2.imwrite('camera-image.jpg', image_np)
             # image_np = imutils.resize(image_np, width=200)
             # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
             image_np_expanded = np.expand_dims(image_np, axis=0)

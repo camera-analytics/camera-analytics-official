@@ -1,6 +1,6 @@
 ﻿import json
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from dateutil.parser import parse
 from flask_cors import CORS
 
@@ -22,6 +22,11 @@ def positions():
     with open('positions.txt', 'r') as f:
         positions = [line[:-1] if '\n' in line else line for line in f.readlines()]
         return json.dumps(positions)
+
+@app.route("/api/image")
+def image():
+    return send_from_directory("detector", "camera-image.jpg")
+
 
 @app.route("/api/customers/maxcount")
 def max_customers():
