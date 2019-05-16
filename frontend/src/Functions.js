@@ -1,6 +1,6 @@
-import React, { Component } from 'react'
-import styled from 'styled-components'
-import { Column, Columns } from 're-bulma'
+import React, { Component } from "react";
+import styled from "styled-components";
+import { Column, Columns } from "re-bulma";
 import {
   CartesianGrid,
   Legend,
@@ -8,15 +8,16 @@ import {
   LineChart,
   Tooltip,
   XAxis,
-  YAxis
-} from 'recharts'
-import DataService from './DataService'
+  YAxis,
+  ResponsiveContainer
+} from "recharts";
+import DataService from "./DataService";
 
 const AppContainer = styled.div`
   padding: 2%;
   max-width: 90%;
   margin: auto;
-`
+`;
 
 const Card = styled.div`
   padding-top:
@@ -31,7 +32,7 @@ const Card = styled.div`
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.10), 0 5px 5px rgba(0, 0, 0, 0.10);
     cursor: pointer;
   }
-`
+`;
 
 const Title = styled.h1`
   text-transform: uppercase;
@@ -40,7 +41,7 @@ const Title = styled.h1`
   padding: 2%;
   color: #103fb9;
   text-align: center;
-`
+`;
 
 const ChartTitle = styled.h1`
   font-size: 1.5rem;
@@ -50,67 +51,67 @@ const ChartTitle = styled.h1`
   letter-spacing: 2px;
   background: #103fb9;
   color: #fff;
-`
+`;
 
 const Data = styled.div`
   font-size: ${props => props.sz};
   text-align: center;
   font-weight: 800;
-`
+`;
 const HeatMap = styled.div`
   width: 100%;
   border: 1px solid #d8dbe4;
-`
+`;
 
 class Functions extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       data: [],
       currentCustomerCount: {
         count: 0,
-        datetime: ''
+        datetime: ""
       },
       totalCustomerCount: {
         count: 100
       },
       customerPositions: {
-        positions: [],
+        positions: []
       },
       maxCount: 0
-    }
-    let dataService = new DataService()
+    };
+    let dataService = new DataService();
 
     let updateCurrentCustomerCount = () => {
       dataService.currentCustomerCounts().then(count => {
-        this.state.currentCustomerCount = count
-        this.setState(this.state)
-      })
-    }
+        this.state.currentCustomerCount = count;
+        this.setState(this.state);
+      });
+    };
 
     let updateCustomerCounts = () => {
       dataService.customerCounts().then(counts => {
         this.state.data = counts.map((count, index) => ({
           name: index,
           customers: count
-        }))
-        let maxCount = 0
+        }));
+        let maxCount = 0;
         this.state.data.forEach(record => {
-          maxCount = Math.max(maxCount, record.customers)
-        })
-        this.state.maxCount = maxCount
-        this.setState(this.state)
-      })
-    }
+          maxCount = Math.max(maxCount, record.customers);
+        });
+        this.state.maxCount = maxCount;
+        this.setState(this.state);
+      });
+    };
 
-    updateCurrentCustomerCount()
+    updateCurrentCustomerCount();
 
-    updateCustomerCounts()
+    updateCustomerCounts();
 
     setInterval(() => {
-      updateCurrentCustomerCount()
-      updateCustomerCounts()
-    }, 1000)
+      updateCurrentCustomerCount();
+      updateCustomerCounts();
+    }, 1000);
   }
 
   render() {
@@ -120,25 +121,24 @@ class Functions extends Component {
           <Columns>
             <Column size="isTwoThirds">
               <ChartTitle> Customers in Store </ChartTitle>
-
-              <LineChart
-                width={1000}
-                height={500}
-                data={this.state.data}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <XAxis dataKey="name" />
-                <YAxis />
-                <CartesianGrid strokeDasharray="3 3" />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="customers"
-                  stroke="#3a7bd5"
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
+              <ResponsiveContainer width="95%" height={400}>
+                <LineChart
+                  data={this.state.data}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="customers"
+                    stroke="#3a7bd5"
+                    activeDot={{ r: 8 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </Column>
             <Column>
               <Card>
@@ -155,14 +155,11 @@ class Functions extends Component {
                 <Data sz="1em">$1000/{this.state.maxCount}</Data>
               </Card>
             </Column>
-
-            <Column>
-            </Column>
           </Columns>
         </AppContainer>
       </div>
-    )
+    );
   }
 }
 
-export default Functions
+export default Functions;
