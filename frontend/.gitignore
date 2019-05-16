@@ -4,10 +4,10 @@
 node_modules
 
 # testing
-frontend/coverage
+coverage
 
 # production
-frontend/build
+build
 
 # misc
 .DS_Store
