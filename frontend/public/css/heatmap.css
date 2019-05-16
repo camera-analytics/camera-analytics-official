@@ -1,17 +1,23 @@
-@import url('https://fonts.googleapis.com/css?family=Lato');
-body, html, h2 {
-  margin:0;
-  padding:0;
-  height:100%;
+@import url("https://fonts.googleapis.com/css?family=Lato");
+body,
+html,
+h2 {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   background: #f0f4fe;
 }
 body * {
-  font-weight:200;
+  font-weight: 200;
+}
+
+a {
+  text-decoration: none;
 }
 
 .chartTitle {
@@ -25,7 +31,8 @@ body * {
   font-weight: bold;
   margin-left: auto;
   margin-right: auto;
-  max-width: 620px; # /* IMAGE_WIDTH - padding + IMAGE_BORDER */
+  max-width: 620px;
+  #/* IMAGE_WIDTH - padding + IMAGE_BORDER */;
 }
 
 .chartTitleHolder {
@@ -35,47 +42,47 @@ body * {
 
 #heatmapContainerWrapper {
   width: 640px;
-  height:360px;
+  height: 360px;
   margin: auto;
   border: 5px solid #fff;
   /* position:absolute; */
 }
 #heatmapContainer {
-  width:640px;
-  height:360px;
-  background:url(http://localhost:5000/api/image);
+  width: 640px;
+  height: 360px;
+  background: url(http://localhost:5000/api/image);
   background-size: 640px 360px;
 }
 #heatmapLegend {
-  background:white;
+  background: white;
   /* position:absolute; */
-  bottom:0;
-  right:0;
-  padding:10px;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
 }
 #min {
-  float:left;
+  float: left;
 }
 #max {
-  float:right;
+  float: right;
 }
 h1 {
   /* position:absolute; */
-  background:black;
-  color:white;
-  padding:10px;
-  font-weight:200;
+  background: black;
+  color: white;
+  padding: 10px;
+  font-weight: 200;
 }
 
 #all-examples-info {
   /* position:absolute; */
-  background:white;
-  font-size:16px;
-  padding:20px;
-  top:100px;
-  width:350px;
-  line-height:150%;
-  border:1px solid rgba(0,0,0,.2);
+  background: white;
+  font-size: 16px;
+  padding: 20px;
+  top: 100px;
+  width: 350px;
+  line-height: 150%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 #logo {

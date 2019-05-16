@@ -43,6 +43,19 @@ const Title = styled.h1`
   text-align: center;
 `;
 
+const HeatmapTitle = styled.h1`
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 1.5rem;
+  color: #103fb9;
+  text-align: center;
+
+  &:hover {
+    opacity: 0.5;
+    transition: all 300ms ease;
+  }
+`;
+
 const ChartTitle = styled.h1`
   font-size: 1.5rem;
   padding: 2%;
@@ -139,6 +152,11 @@ class Functions extends Component {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              <br />
+              <br />
+              <a href="/heatmap.html">
+                <HeatmapTitle>View Heatmap</HeatmapTitle>
+              </a>
             </Column>
             <Column>
               <Card>
