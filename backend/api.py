@@ -19,8 +19,12 @@ CORS(app)
 
 @app.route("/api/positions")
 def positions():
-    with open('positions.txt', 'r') as f:
-        positions = [line[:-1] if '\n' in line else line for line in f.readlines()]
+    with open('positions-hashed.txt', 'r') as f:
+        positions = []
+        for line in f.readlines():
+            if '\n' in line:
+                line = line[:-1]
+            positions.append([int(x) for x in line.split(',')])
         return json.dumps(positions)
 
 @app.route("/api/image")

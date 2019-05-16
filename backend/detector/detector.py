@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 from utils import label_map_util
+from utils.heatmap import HeatMap
 
 from utils import visualization_utils as vis_util
 from imutils.video import FPS
@@ -127,10 +128,9 @@ with detection_graph.as_default():
             with open('../records.txt', 'a+') as records:
                 records.write(record)
 
-            with open('../positions.txt', 'a+') as positions:
-                for coordinate in coordinates:
-                    numbers = [('%f' % number) for number in coordinate]
-                    positions.write('  '.join(numbers) + '\n')
+            heatmap = HeatMap(width=50, height=30)
+            for coordinate in coordinates:
+                heatmap.update(coordinate)
 
             state.seek(0)
             state.write(record)
