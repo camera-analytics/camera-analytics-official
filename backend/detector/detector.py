@@ -19,9 +19,10 @@ from utils import visualization_utils as vis_util
 from imutils.video import FPS
 import imutils
 import cv2
+import time
 
-# VIDEO_INPUT = '../videos/store_footage.mp4'
-VIDEO_INPUT = 0
+VIDEO_INPUT = '../videos/store_footage-2.mp4'
+# VIDEO_INPUT = 0
 
 # # Model preparation
 # Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_CKPT` to point to a new .pb file.
@@ -82,63 +83,78 @@ with open('../records.txt', 'w+') as records:
     records.write('')
 
 # Running the tensorflow session
+num_times = 0
 with detection_graph.as_default():
     with tf.Session(graph=detection_graph) as sess:
+        frame = 0
         ret = True
         while (ret):
             ret, image_np = cap.read()
             if not ret:
                 break
+            if frame % 5 == 0:
+                if num_times < 10:
+                    cv2.imwrite('camera-image.jpg', image_np)
+                    num_times += 1
+                # image_np = imutils.resize(image_np, width=200)
+                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+                image_np_expanded = np.expand_dims(image_np, axis=0)
+                image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                # Each box represents a part of the image where a particular object was detected.
+                boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                # Each score represent how level of confidence for each of the objects.
+                # Score is shown on the result image, together with the class label.
+                scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+                # Actual detection.
+                # t = time.clock()
+                (boxes, scores, classes, num_detections) = sess.run(
+                    [boxes, scores, classes, num_detections],
+                    feed_dict={image_tensor: image_np_expanded})
+                # Visualization of the results of a detection.
+                # print("CNN time: ", time.clock()-t)
 
-            cv2.imwrite('camera-image.jpg', image_np)
-            # image_np = imutils.resize(image_np, width=200)
-            # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-            image_np_expanded = np.expand_dims(image_np, axis=0)
-            image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-            # Each box represents a part of the image where a particular object was detected.
-            boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-            # Each score represent how level of confidence for each of the objects.
-            # Score is shown on the result image, together with the class label.
-            scores = detection_graph.get_tensor_by_name('detection_scores:0')
-            classes = detection_graph.get_tensor_by_name('detection_classes:0')
-            num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-            # Actual detection.
-            (boxes, scores, classes, num_detections) = sess.run(
-                [boxes, scores, classes, num_detections],
-                feed_dict={image_tensor: image_np_expanded})
-            # Visualization of the results of a detection.
-            coordinates = vis_util.visualize_boxes_and_labels_on_image_array(
-                image_np,
-                np.squeeze(boxes),
-                np.squeeze(classes).astype(np.int32),
-                np.squeeze(scores),
-                category_index,
-                use_normalized_coordinates=True,
-                line_thickness=8)
-            #      plt.figure(figsize=IMAGE_SIZE)
-            #      plt.imshow(image_np)
+                # t = time.clock()
+                coordinates = vis_util.visualize_boxes_and_labels_on_image_array(
+                    image_np,
+                    np.squeeze(boxes),
+                    np.squeeze(classes).astype(np.int32),
+                    np.squeeze(scores),
+                    category_index,
+                    use_normalized_coordinates=True,
+                    line_thickness=8)
+                #      plt.figure(figsize=IMAGE_SIZE)
+                #      plt.imshow(image_np)
+                # print("visualizing time: ", time.clock()-t)
+                # t = time.clock()
+                height, width = image_np.shape[0:2]
+                with open('../image-dimensions.txt', 'w') as f:
+                    f.write(str(height) + ' ' + str(width))
 
-            # print(coordinates)
-            customers_count = len(coordinates)
+                # print(coordinates)
+                customers_count = len(coordinates)
 
-            now = datetime.datetime.now()
+                now = datetime.datetime.now()
 
-            record = '%i  %s\n' % (customers_count, str(now))
+                record = '%i  %s\n' % (customers_count, str(now))
 
-            with open('../records.txt', 'a+') as records:
-                records.write(record)
+                with open('../records.txt', 'a+') as records:
+                    records.write(record)
 
-            heatmap = HeatMap(width=50, height=30)
-            for coordinate in coordinates:
-                heatmap.update(coordinate)
+                heatmap = HeatMap(width=50, height=30)
+                for coordinate in coordinates:
+                    heatmap.update(coordinate)
 
-            state.seek(0)
-            state.write(record)
+                state.seek(0)
+                state.write(record)
 
-            cv2.imshow('image', cv2.resize(image_np, (1280, 960)))
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                cap.release()
-                break
-            fps.update()
+                cv2.imshow('image', cv2.resize(image_np, (int(1280/2), int(960/2))))
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    cv2.destroyAllWindows()
+                    cap.release()
+                    break
+                fps.update()
+                # print("rest time: ", time.clock()-t)
+            frame += 1
 state.close()

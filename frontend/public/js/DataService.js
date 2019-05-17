@@ -26,4 +26,12 @@ class DataService {
       })
     })
   }
+
+  imageDimensions() {
+    return new Promise((success, fail) => {
+      fetch(`${this._BASE_URL}/dimensions`).then(response => {
+        response.json().then(success)
+      })
+    })
+  }
 }

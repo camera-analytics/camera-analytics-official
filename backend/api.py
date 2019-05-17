@@ -31,6 +31,12 @@ def positions():
 def image():
     return send_from_directory("detector", "camera-image.jpg")
 
+@app.route("/api/dimensions")
+def dimensions():
+    with open('image-dimensions.txt', 'r') as f:
+        dimensions = f.read().split(' ')
+        return json.dumps({"height": int(dimensions[0]),
+                           "width": int(dimensions[1])})
 
 @app.route("/api/customers/maxcount")
 def max_customers():

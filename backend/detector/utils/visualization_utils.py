@@ -328,8 +328,8 @@ def visualize_boxes_and_labels_on_image_array(image,
                                               instance_masks=None,
                                               keypoints=None,
                                               use_normalized_coordinates=False,
-                                              max_boxes_to_draw=20,
-                                              min_score_thresh=.5,
+                                              max_boxes_to_draw=50,
+                                              min_score_thresh=.15,
                                               agnostic_mode=False,
                                               line_thickness=4):
   """Overlay labeled boxes on an image with formatted scores and label names.
@@ -371,36 +371,40 @@ def visualize_boxes_and_labels_on_image_array(image,
   box_to_color_map = collections.defaultdict(str)
   box_to_instance_masks_map = {}
   box_to_keypoints_map = collections.defaultdict(list)
+  
   if not max_boxes_to_draw:
     max_boxes_to_draw = boxes.shape[0]
   for i in range(min(max_boxes_to_draw, boxes.shape[0])):
     if scores is None or scores[i] > min_score_thresh:
       box = tuple(boxes[i].tolist())
-      if instance_masks is not None:
-        box_to_instance_masks_map[box] = instance_masks[i]
-      if keypoints is not None:
-        box_to_keypoints_map[box].extend(keypoints[i])
-      if scores is None:
-        box_to_color_map[box] = 'black'
-      else:
-        if not agnostic_mode:
-          if classes[i] in category_index.keys():
-            class_name = category_index[classes[i]]['name']
+      ymin, xmin, ymax, xmax = box
+      # remove very large boxes
+      if (ymax - ymin) <= 0.7 or (xmax - xmin) <= 0.7:
+          if instance_masks is not None:
+            box_to_instance_masks_map[box] = instance_masks[i]
+          if keypoints is not None:
+            box_to_keypoints_map[box].extend(keypoints[i])
+          if scores is None:
+            box_to_color_map[box] = 'black'
           else:
-            class_name = 'N/A'
-          display_str = '{}: {}%'.format(
-              class_name,
-              int(100*scores[i]))
-        else:
-          display_str = 'score: {}%'.format(int(100 * scores[i]))
-        if class_name != 'person':
-          continue
-        box_to_display_str_map[box].append(display_str)
-        if agnostic_mode:
-          box_to_color_map[box] = 'DarkOrange'
-        else:
-          box_to_color_map[box] = STANDARD_COLORS[
-              classes[i] % len(STANDARD_COLORS)]
+            if not agnostic_mode:
+              if classes[i] in category_index.keys():
+                class_name = category_index[classes[i]]['name']
+              else:
+                class_name = 'N/A'
+              display_str = '{}: {}%'.format(
+                  class_name,
+                  int(100*scores[i]))
+            else:
+              display_str = 'score: {}%'.format(int(100 * scores[i]))
+            if class_name != 'person':
+              continue
+            box_to_display_str_map[box].append(display_str)
+            if agnostic_mode:
+              box_to_color_map[box] = 'DarkOrange'
+            else:
+              box_to_color_map[box] = STANDARD_COLORS[
+                  classes[i] % len(STANDARD_COLORS)]
 
   center_positions = []
 

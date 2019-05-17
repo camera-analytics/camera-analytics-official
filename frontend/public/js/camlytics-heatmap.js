@@ -23,51 +23,61 @@ let dataService = new DataService()
 
 let RADIUS_SIZE = 30
 
-let IMAGE_WIDTH = 640 // pixels
-let IMAGE_HEIGHT = 360
+var imageHeight, imageWidth
+
+let getDimensions = () => {
+  dataService.imageDimensions().then(dimensions => {
+    imageHeight = dimensions.height
+    imageWidth = dimensions.width
+  }
+)}
+
+// const IMAGE_HEIGHT = 720
+// const IMAGE_WIDTH = 1280
 
 let updatePositions = () => {
-var positionData = []
-var first_max = 0;
-var second_max = 0;
-dataService.customerPositions().then(positions => {
-  const HEATMAP_HEIGHT = positions.length;
-  const HEATMAP_WIDTH = positions[0].length;
-  for (i = 0; i < HEATMAP_HEIGHT; i++) {
-    for (j = 0; j < HEATMAP_WIDTH; j++) {
-      if (positions[i][j] != 0) {
-        if (positions[i][j] > first_max) {
-          first_max = positions[i][j]
-        } else if (positions[i][j] > second_max) {
-          second_max = positions[i][j]
+  var positionData = []
+  var first_max = 0;
+  var second_max = 0;
+  dataService.customerPositions().then(positions => {
+    if (imageHeight != undefined) { // make sure previous fetch succeeded
+      console.log(imageHeight)
+      var value
+      const HEATMAP_HEIGHT = positions.length;
+      const HEATMAP_WIDTH = positions[0].length;
+      for (i = 0; i < HEATMAP_HEIGHT; i++) {
+        for (j = 0; j < HEATMAP_WIDTH; j++) {
+          if (positions[i][j] != 0) {
+            // // log value
+            // value = Math.round(Math.log(positions[i][j]))
+            
+            value = positions[i][j]
+            if (value > first_max) {
+              first_max = value
+            } else if (positions[i][j] > second_max) {
+              second_max = value
+            }
+            positionData.push({x: Math.floor(imageWidth*j/HEATMAP_WIDTH),
+                               y: Math.floor(imageHeight*i/HEATMAP_HEIGHT),
+                               value: value,
+                               radius: RADIUS_SIZE})
+          }
         }
-        positionData.push({x: Math.floor(IMAGE_WIDTH*j/HEATMAP_WIDTH),
-                           y: Math.floor(IMAGE_HEIGHT*i/HEATMAP_HEIGHT),
-                           value: positions[i][j],
-                           radius: RADIUS_SIZE})
       }
+      console.log(positionData)
+      heatmap.setData({
+        min: 0,
+        max: second_max,
+        data: positionData
+      });
     }
-  }
-  // for (i=0; i < positionStrings.length; i++) {
-  //   split = positionStrings[i].split("  ")
-  //   // console.log(p)
-  //   positionData.push({x: Math.round(IMAGE_WIDTH*parseFloat(split[0])),
-  //                      y: Math.round(IMAGE_HEIGHT*parseFloat(split[1])),
-  //                      value: 1,
-  //                      radius: RADIUS_SIZE})
-  // }
-  console.log(positionData)
-  heatmap.setData({
-    min: 0,
-    max: second_max,
-    data: positionData
-  });
-})
+  })
 }
-
+getDimensions()
 updatePositions()
 setInterval(() => {
-updatePositions()
+  getDimensions()
+  updatePositions()
 }, 1000) // refreshes every 1 second
 
 };

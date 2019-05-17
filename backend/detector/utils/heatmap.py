@@ -27,8 +27,8 @@ class HeatMap:
         x_coord = min(int(normalized_x_coord*self.width), self.width-1)
         y_coord = min(int(normalized_y_coord*self.height), self.height-1)
         index = y_coord*9*self.width + 9*x_coord
-        print('n_x ', normalized_x_coord, '  n_y ', normalized_y_coord)
-        print('x ', x_coord, '  y ', y_coord)
+        # print('n_x ', normalized_x_coord, '  n_y ', normalized_y_coord)
+        # print('x ', x_coord, '  y ', y_coord)
         return index
 
     def update(self, normalized_coordinates):
