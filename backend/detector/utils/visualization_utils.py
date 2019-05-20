@@ -371,7 +371,9 @@ def visualize_boxes_and_labels_on_image_array(image,
   box_to_color_map = collections.defaultdict(str)
   box_to_instance_masks_map = {}
   box_to_keypoints_map = collections.defaultdict(list)
-  
+
+  MAX_HUMAN_SIZE = 0.3 # percent of screen that human can take up
+
   if not max_boxes_to_draw:
     max_boxes_to_draw = boxes.shape[0]
   for i in range(min(max_boxes_to_draw, boxes.shape[0])):
@@ -379,7 +381,7 @@ def visualize_boxes_and_labels_on_image_array(image,
       box = tuple(boxes[i].tolist())
       ymin, xmin, ymax, xmax = box
       # remove very large boxes
-      if (ymax - ymin) <= 0.7 or (xmax - xmin) <= 0.7:
+      if (ymax - ymin) <= MAX_HUMAN_SIZE or (xmax - xmin) <= MAX_HUMAN_SIZE:
           if instance_masks is not None:
             box_to_instance_masks_map[box] = instance_masks[i]
           if keypoints is not None:

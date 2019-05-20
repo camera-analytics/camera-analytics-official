@@ -21,7 +21,7 @@ import imutils
 import cv2
 import time
 
-VIDEO_INPUT = '../videos/store_footage-2.mp4'
+VIDEO_INPUT = '../videos/TownCentreXVID.avi'
 # VIDEO_INPUT = 0
 
 # # Model preparation
@@ -29,28 +29,33 @@ VIDEO_INPUT = '../videos/store_footage-2.mp4'
 # By default we use an "SSD with Mobilenet" model here. See the [detection model zoo](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md) for a list of other models that can be run out-of-the-box with varying speeds and accuracies.
 
 # What model to download.
-MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
+# MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
+MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
+# faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
+
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
-PATH_TO_CKPT = MODEL_NAME + '/frozen_inference_graph.pb'
+PATH_TO_CKPT = 'downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 
 NUM_CLASSES = 90
 
+PROCESSING_FRAME_RATE = 5
+
 # ## Download Model
-if not os.path.exists(MODEL_NAME + '/frozen_inference_graph.pb'):
+if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
     print('Downloading the model')
     opener = urllib.request.URLopener()
-    opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, MODEL_FILE)
-    tar_file = tarfile.open(MODEL_FILE)
+    opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, 'downloaded_models/' + MODEL_FILE)
+    tar_file = tarfile.open('downloaded_models/' + MODEL_FILE)
     for file in tar_file.getmembers():
-        file_name = os.path.basename(file.name)
+        file_name = os.path.basename('downloaded_models/' + file.name)
         if 'frozen_inference_graph.pb' in file_name:
-            tar_file.extract(file, os.getcwd())
+            tar_file.extract(file, os.getcwd() + '/downloaded_models')
     print('Download complete')
 else:
     print('Model already exists')
@@ -83,16 +88,16 @@ with open('../records.txt', 'w+') as records:
     records.write('')
 
 # Running the tensorflow session
-num_times = 0
 with detection_graph.as_default():
     with tf.Session(graph=detection_graph) as sess:
         frame = 0
         ret = True
+        num_times = 0
         while (ret):
             ret, image_np = cap.read()
             if not ret:
                 break
-            if frame % 5 == 0:
+            if frame % PROCESSING_FRAME_RATE == 0:
                 if num_times < 10:
                     cv2.imwrite('camera-image.jpg', image_np)
                     num_times += 1
@@ -149,7 +154,9 @@ with detection_graph.as_default():
                 state.seek(0)
                 state.write(record)
 
-                cv2.imshow('image', cv2.resize(image_np, (int(1280/2), int(960/2))))
+                cv2.imshow('image', cv2.resize(image_np,
+                                                    (int(image_np.shape[1]/2),
+                                                    int(image_np.shape[0]/2))))
                 if cv2.waitKey(25) & 0xFF == ord('q'):
                     cv2.destroyAllWindows()
                     cap.release()
