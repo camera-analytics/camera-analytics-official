@@ -16,6 +16,7 @@ from utils import label_map_util
 from utils.heatmap import HeatMap
 
 from utils import visualization_utils as vis_util
+from utils.fileio import clear_files
 from imutils.video import FPS
 import imutils
 import cv2
@@ -46,8 +47,13 @@ NUM_CLASSES = 90
 
 PROCESSING_FRAME_RATE = 5
 
+clear_files()
+
 if not os.path.exists('downloaded_models'):
     os.makedirs('downloaded_models')
+
+if not os.path.exists('data'):
+    os.makedirs('data')
 
 # Download Model
 if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
@@ -85,8 +91,8 @@ category_index = label_map_util.create_category_index(categories)
 cap = cv2.VideoCapture(VIDEO_INPUT)
 fps = FPS().start()
 
-state = open('../state.txt', 'w+')
-with open('../records.txt', 'w+') as records:
+state = open('../data/state.txt', 'w+')
+with open('../data/records.txt', 'w+') as records:
     records.seek(0)
     records.write('')
 
@@ -102,7 +108,7 @@ with detection_graph.as_default():
                 break
             if frame % PROCESSING_FRAME_RATE == 0:
                 if num_times < 10:
-                    cv2.imwrite('camera-image.jpg', image_np)
+                    cv2.imwrite('../data/camera-image.jpg', image_np)
                     num_times += 1
                 # image_np = imutils.resize(image_np, width=200)
                 # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
@@ -136,9 +142,6 @@ with detection_graph.as_default():
                 #      plt.imshow(image_np)
                 # print("visualizing time: ", time.clock()-t)
                 # t = time.clock()
-                height, width = image_np.shape[0:2]
-                with open('../image-dimensions.txt', 'w') as f:
-                    f.write(str(height) + ' ' + str(width))
 
                 # print(coordinates)
                 customers_count = len(coordinates)
@@ -147,7 +150,7 @@ with detection_graph.as_default():
 
                 record = '%i  %s\n' % (customers_count, str(now))
 
-                with open('../records.txt', 'a+') as records:
+                with open('../data/records.txt', 'a+') as records:
                     records.write(record)
 
                 heatmap = HeatMap(width=50, height=30)

@@ -14,8 +14,8 @@ class HeatMap:
         self.width = width
         self.height = height
 
-        if not os.path.isfile('../positions-hashed.txt'):
-            with open('../positions-hashed.txt', 'w') as positions:
+        if not os.path.isfile('../data/positions-hashed.txt'):
+            with open('../data/positions-hashed.txt', 'w') as positions:
                 for i in range(self.height):
                     positions.write(','.join(['00000000']*self.width)+ '\n')
 
@@ -32,7 +32,7 @@ class HeatMap:
         return index
 
     def update(self, normalized_coordinates):
-        with open('../positions-hashed.txt', 'r+') as positions:
+        with open('../data/positions-hashed.txt', 'r+') as positions:
             index = self._get_index(normalized_coordinates[0],
                                     normalized_coordinates[1])
             positions.seek(index)

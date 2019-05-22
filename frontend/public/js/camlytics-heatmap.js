@@ -23,25 +23,15 @@ let dataService = new DataService()
 
 let RADIUS_SIZE = 30
 
-var imageHeight, imageWidth
-
-let getDimensions = () => {
-  dataService.imageDimensions().then(dimensions => {
-    imageHeight = dimensions.height
-    imageWidth = dimensions.width
-  }
-)}
-
-// const IMAGE_HEIGHT = 720
-// const IMAGE_WIDTH = 1280
+const IMAGE_HEIGHT = 360
+const IMAGE_WIDTH = 640
 
 let updatePositions = () => {
   var positionData = []
-  var first_max = 0;
-  var second_max = 0;
+  var firstMax = 0;
+  var secondMax = 0;
   dataService.customerPositions().then(positions => {
-    if (imageHeight != undefined) { // make sure previous fetch succeeded
-      console.log(imageHeight)
+    if (IMAGE_HEIGHT != undefined) { // make sure previous fetch succeeded
       var value
       const HEATMAP_HEIGHT = positions.length;
       const HEATMAP_WIDTH = positions[0].length;
@@ -50,15 +40,14 @@ let updatePositions = () => {
           if (positions[i][j] != 0) {
             // // log value
             // value = Math.round(Math.log(positions[i][j]))
-            
             value = positions[i][j]
-            if (value > first_max) {
-              first_max = value
-            } else if (positions[i][j] > second_max) {
-              second_max = value
+            if (value > firstMax) {
+              firstMax = value
+            } else if (positions[i][j] > secondMax) {
+              secondMax = value
             }
-            positionData.push({x: Math.floor(imageWidth*j/HEATMAP_WIDTH),
-                               y: Math.floor(imageHeight*i/HEATMAP_HEIGHT),
+            positionData.push({x: Math.floor(IMAGE_WIDTH*j/HEATMAP_WIDTH),
+                               y: Math.floor(IMAGE_HEIGHT*i/HEATMAP_HEIGHT),
                                value: value,
                                radius: RADIUS_SIZE})
           }
@@ -67,16 +56,14 @@ let updatePositions = () => {
       console.log(positionData)
       heatmap.setData({
         min: 0,
-        max: second_max,
+        max: secondMax,
         data: positionData
       });
     }
   })
 }
-getDimensions()
 updatePositions()
 setInterval(() => {
-  getDimensions()
   updatePositions()
 }, 1000) // refreshes every 1 second
 

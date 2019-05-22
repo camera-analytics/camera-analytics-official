@@ -7,19 +7,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-
-# @app.route("/api/customers")
-# def customers():
-#     with open('customers.txt', 'r') as f:
-#         customer_records = [line[:-1] if '\n' in line else line for line in f.readlines()]
-#         customer_arrays = [customer_record.split('  ') for customer_record in customer_records]
-#         return json.dumps(
-#             [{'profile': customer_array[0], 'item_count': customer_array[1], 'updated_at': customer_array[2]}
-#              for customer_array in customer_arrays])
-
 @app.route("/api/positions")
 def positions():
-    with open('positions-hashed.txt', 'r') as f:
+    with open('data/positions-hashed.txt', 'r') as f:
         positions = []
         for line in f.readlines():
             if '\n' in line:
@@ -29,19 +19,12 @@ def positions():
 
 @app.route("/api/image")
 def image():
-    return send_from_directory("detector", "camera-image.jpg")
-
-@app.route("/api/dimensions")
-def dimensions():
-    with open('image-dimensions.txt', 'r') as f:
-        dimensions = f.read().split(' ')
-        return json.dumps({"height": int(dimensions[0]),
-                           "width": int(dimensions[1])})
+    return send_from_directory("data", "camera-image.jpg")
 
 @app.route("/api/customers/maxcount")
 def max_customers():
     max_count = 0
-    with open('records.txt', 'r') as f:
+    with open('data/records.txt', 'r') as f:
         records = [line[:-1] if '\n' in line else line for line in f.readlines()]
         for record in records:
             record_arr = record.split('  ')
@@ -53,7 +36,7 @@ def max_customers():
 
 @app.route("/api/customers/count")
 def current_customers_count():
-    with open('state.txt', 'r') as f:
+    with open('data/state.txt', 'r') as f:
         record = f.read()[:-1]
         data_array = record.split('  ')
         return json.dumps({
@@ -64,7 +47,7 @@ def current_customers_count():
 
 @app.route("/api/products")
 def products():
-    with open('products.txt', 'r') as f:
+    with open('data/products.txt', 'r') as f:
         products = [line[:-1] if '\n' in line else line for line in f.readlines()]
         return json.dumps(products)
 
@@ -77,7 +60,7 @@ def customers_counts():
     ending_hour = None
     ending_minute = None
     record_arrs = []
-    with open('records.txt', 'r') as f:
+    with open('data/records.txt', 'r') as f:
         records = [line[:-1] if '\n' in line else line for line in f.readlines()]
         for record in records:
             record_arr = record.split('  ')
