@@ -21,8 +21,8 @@ import imutils
 import cv2
 import time
 
-VIDEO_INPUT = '../videos/TownCentreXVID.avi'
-# VIDEO_INPUT = 0
+# VIDEO_INPUT = '../videos/TownCentreXVID.avi'
+VIDEO_INPUT = 0
 
 # # Model preparation
 # Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_CKPT` to point to a new .pb file.
@@ -46,7 +46,10 @@ NUM_CLASSES = 90
 
 PROCESSING_FRAME_RATE = 5
 
-# ## Download Model
+if not os.path.exists('downloaded_models'):
+    os.makedirs('downloaded_models')
+
+# Download Model
 if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
     print('Downloading the model')
     opener = urllib.request.URLopener()
