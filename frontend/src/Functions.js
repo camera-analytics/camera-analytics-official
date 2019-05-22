@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import DataService from "./DataService";
 import moment from "moment";
+import Iframe from 'react-iframe'
 
 const AppContainer = styled.div`
   padding: 2%;
@@ -182,10 +183,16 @@ class Functions extends Component {
                 </ScatterChart>
               </ResponsiveContainer>
               <br />
-              <br />
-              <a href="/heatmap.html">
-                <HeatmapTitle>View Heatmap</HeatmapTitle>
-              </a>
+              <ChartTitle> Heatmap </ChartTitle>
+              <div id="heatmap-container">
+              <Iframe url="heatmap.html"
+                      width="650px"
+                      height="370px"
+                      id="heatmap-iframe"
+                      className="myClassname"
+                      display="initial"
+                      position="relative"/>
+              </div>
             </Column>
             <Column>
               <Card>

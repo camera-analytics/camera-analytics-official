@@ -10,3 +10,11 @@ body {
 a {
   text-decoration: none;
 }
+
+#heatmap-iframe {
+  border: none
+}
+
+#heatmap-container {
+  text-align: center
+}
