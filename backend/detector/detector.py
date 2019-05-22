@@ -52,8 +52,8 @@ clear_files()
 if not os.path.exists('downloaded_models'):
     os.makedirs('downloaded_models')
 
-if not os.path.exists('data'):
-    os.makedirs('data')
+if not os.path.exists('../data'):
+    os.makedirs('../data')
 
 # Download Model
 if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
