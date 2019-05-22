@@ -40,8 +40,8 @@ def current_customers_count():
         record = f.read()[:-1]
         data_array = record.split('  ')
         return json.dumps({
-            'count': data_array[0],
-            'datetime': data_array[1]
+            'datetime': data_array[1],
+            'count': data_array[0]
         })
 
 

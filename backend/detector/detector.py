@@ -1,4 +1,4 @@
-import datetime
+import datetime, time
 import numpy as np
 import os
 import six.moves.urllib as urllib
@@ -22,7 +22,7 @@ import imutils
 import cv2
 import time
 
-# VIDEO_INPUT = '../videos/TownCentreXVID.avi'
+# VIDEO_INPUT = './test.mp4'
 VIDEO_INPUT = 0
 
 # # Model preparation
@@ -147,8 +147,10 @@ with detection_graph.as_default():
                 customers_count = len(coordinates)
 
                 now = datetime.datetime.now()
-
+                timestamp = time.time()
                 record = '%i  %s\n' % (customers_count, str(now))
+                state_record = '%i  %s\n' % (customers_count, str(timestamp))
+
 
                 with open('../data/records.txt', 'a+') as records:
                     records.write(record)
@@ -158,7 +160,7 @@ with detection_graph.as_default():
                     heatmap.update(coordinate)
 
                 state.seek(0)
-                state.write(record)
+                state.write(state_record)
 
                 cv2.imshow('image', cv2.resize(image_np,
                                                     (int(image_np.shape[1]/2),

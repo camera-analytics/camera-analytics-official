@@ -9,9 +9,12 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter
 } from "recharts";
 import DataService from "./DataService";
+import moment from "moment";
 
 const AppContainer = styled.div`
   padding: 2%;
@@ -80,16 +83,10 @@ class Functions extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: [],
+      graphData: [],
       currentCustomerCount: {
-        count: 0,
-        datetime: ""
-      },
-      totalCustomerCount: {
-        count: 100
-      },
-      customerPositions: {
-        positions: []
+        datetime: "",
+        count: 0
       },
       maxCount: 0
     };
@@ -104,12 +101,12 @@ class Functions extends Component {
 
     let updateCustomerCounts = () => {
       dataService.customerCounts().then(counts => {
-        this.state.data = counts.map((count, index) => ({
+        let data = counts.map((count, index) => ({
           name: index,
           customers: count
         }));
         let maxCount = 0;
-        this.state.data.forEach(record => {
+        data.forEach(record => {
           maxCount = Math.max(maxCount, record.customers);
         });
         this.state.maxCount = maxCount;
@@ -117,14 +114,42 @@ class Functions extends Component {
       });
     };
 
+    let updateGraphData = () => {
+      dataService.currentCustomerCounts().then(count => {
+        let countData = {
+          time: count.datetime,
+          number: count.count
+        };
+        if (this.state.graphData.length < 1) {
+          this.setState(prevState => ({
+            graphData: [...prevState.graphData, countData]
+          }));
+        } else if (
+          this.state.graphData[this.state.graphData.length - 1].number !=
+          countData.number
+        ) {
+          this.setState(prevState => ({
+            graphData: [...prevState.graphData, countData]
+          }));
+        }
+        console.log(this.state.graphData);
+      });
+    };
+
     updateCurrentCustomerCount();
 
     updateCustomerCounts();
+
+    updateGraphData();
 
     setInterval(() => {
       updateCurrentCustomerCount();
       updateCustomerCounts();
     }, 1000);
+
+    setInterval(() => {
+      updateGraphData();
+    }, 5000);
   }
 
   render() {
@@ -135,22 +160,26 @@ class Functions extends Component {
             <Column size="isTwoThirds">
               <ChartTitle> Customers in Store </ChartTitle>
               <ResponsiveContainer width="95%" height={400}>
-                <LineChart
-                  data={this.state.data}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="customers"
-                    stroke="#3a7bd5"
-                    activeDot={{ r: 8 }}
+                <ScatterChart>
+                  <XAxis
+                    dataKey="time"
+                    domain={["auto", "auto"]}
+                    name="Time"
+                    tickFormatter={unixTime =>
+                      moment(unixTime * 1000).format("HH:mm:ss")
+                    }
+                    type="number"
                   />
-                </LineChart>
+                  <YAxis dataKey="number" name="Value" />
+
+                  <Scatter
+                    data={this.state.graphData}
+                    line={{ stroke: "#333" }}
+                    lineJointType="monotoneX"
+                    lineType="joint"
+                    name="Values"
+                  />
+                </ScatterChart>
               </ResponsiveContainer>
               <br />
               <br />
