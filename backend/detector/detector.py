@@ -9,8 +9,8 @@ import zipfile
 
 from collections import defaultdict
 from io import StringIO
-from matplotlib import pyplot as plt
-from PIL import Image
+# from matplotlib import pyplot as plt
+# from PIL import Image
 
 from utils import label_map_util
 from utils.heatmap import HeatMap
