@@ -53,7 +53,7 @@ let updatePositions = () => {
           }
         }
       }
-      console.log(positionData)
+      // console.log(positionData)
       heatmap.setData({
         min: 0,
         max: secondMax,
@@ -62,6 +62,11 @@ let updatePositions = () => {
     }
   })
 }
+var date = new Date().getTime()
+$("heatmapContainer").style.background = "url('http://localhost:5000/api/image?date="
+                                     + date + "')"
+$("heatmapContainer").style.backgroundSize = "640px 360px"
+
 updatePositions()
 setInterval(() => {
   updatePositions()

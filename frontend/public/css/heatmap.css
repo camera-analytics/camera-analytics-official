@@ -50,8 +50,8 @@ a {
 #heatmapContainer {
   width: 640px;
   height: 360px;
-  background: url(http://localhost:5000/api/image);
-  background-size: 640px 360px;
+  /* background: url(http://localhost:5000/api/image); */
+  /* background-size: 640px 360px; */
 }
 #heatmapLegend {
   background: white;
