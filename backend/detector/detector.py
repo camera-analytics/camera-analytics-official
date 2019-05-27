@@ -22,8 +22,8 @@ import imutils
 import cv2
 import time
 
-# VIDEO_INPUT = './test.mp4'
-VIDEO_INPUT = 0
+VIDEO_INPUT = './test.mp4'
+# VIDEO_INPUT = 0
 
 # # Model preparation
 # Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_CKPT` to point to a new .pb file.
