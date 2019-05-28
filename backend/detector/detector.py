@@ -22,18 +22,20 @@ import imutils
 import cv2
 import time
 
-VIDEO_INPUT = './test.mp4'
-# VIDEO_INPUT = 0
+# To use the computer webcam, set VIDEO_INPUT = 0
+VIDEO_INPUT = './sample.mp4'
 
 # # Model preparation
-# Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_CKPT` to point to a new .pb file.
-# By default we use an "SSD with Mobilenet" model here. See the [detection model zoo](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md) for a list of other models that can be run out-of-the-box with varying speeds and accuracies.
+# Any model exported using the `export_inference_graph.py` tool can be loaded here
+# simply by changing `PATH_TO_CKPT` to point to a new .pb file. By default we use
+# an "SSD with Mobilenet" model here.
+#
+# See https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md
+# for a list of other models that can be run out-of-the-box with varying speeds
+# and accuracies.
 
-# What model to download.
-# MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
+# The model to download.
 MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
-# faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
-
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
@@ -41,7 +43,7 @@ DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 PATH_TO_CKPT = 'downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join('utils', 'mscoco_label_map.pbtxt')
 
 NUM_CLASSES = 90
 
