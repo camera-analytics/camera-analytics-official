@@ -2,6 +2,7 @@
 Helper functions for efficiently storing and updating heatmap coordinates.
 """
 import os
+from .fileio import POSITIONS_FILE
 
 class HeatMap:
     """
@@ -14,8 +15,8 @@ class HeatMap:
         self.width = width
         self.height = height
 
-        if not os.path.isfile('../data/positions-hashed.txt'):
-            with open('../data/positions-hashed.txt', 'w') as positions:
+        if not os.path.isfile(POSITIONS_FILE):
+            with open(POSITIONS_FILE, 'w') as positions:
                 for i in range(self.height):
                     positions.write(','.join(['00000000']*self.width)+ '\n')
 
@@ -27,12 +28,10 @@ class HeatMap:
         x_coord = min(int(normalized_x_coord*self.width), self.width-1)
         y_coord = min(int(normalized_y_coord*self.height), self.height-1)
         index = y_coord*9*self.width + 9*x_coord
-        # print('n_x ', normalized_x_coord, '  n_y ', normalized_y_coord)
-        # print('x ', x_coord, '  y ', y_coord)
         return index
 
     def update(self, normalized_coordinates):
-        with open('../data/positions-hashed.txt', 'r+') as positions:
+        with open(POSITIONS_FILE, 'r+') as positions:
             index = self._get_index(normalized_coordinates[0],
                                     normalized_coordinates[1])
             positions.seek(index)

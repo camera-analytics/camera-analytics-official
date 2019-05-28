@@ -2,176 +2,143 @@ import datetime, time
 import numpy as np
 import os
 import six.moves.urllib as urllib
-import sys
 import tarfile
 import tensorflow as tf
-import zipfile
-
-from collections import defaultdict
-from io import StringIO
-from matplotlib import pyplot as plt
-from PIL import Image
+from imutils.video import FPS
+import cv2
 
 from utils import label_map_util
+from utils.visualization_utils import visualize_boxes_and_labels_on_image_array
 from utils.heatmap import HeatMap
-
-from utils import visualization_utils as vis_util
-from utils.fileio import clear_files
-from imutils.video import FPS
-import imutils
-import cv2
-import time
+from utils.fileio import *
 
 # To use the computer webcam, set VIDEO_INPUT = 0
-VIDEO_INPUT = './sample.mp4'
+VIDEO_INPUT = SAMPLE_VIDEO
 
-# # Model preparation
-# Any model exported using the `export_inference_graph.py` tool can be loaded here
-# simply by changing `PATH_TO_CKPT` to point to a new .pb file. By default we use
-# an "SSD with Mobilenet" model here.
-#
-# See https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md
-# for a list of other models that can be run out-of-the-box with varying speeds
-# and accuracies.
-
-# The model to download.
-MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
-MODEL_FILE = MODEL_NAME + '.tar.gz'
-DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
-
-# Path to frozen detection graph. This is the actual model that is used for the object detection.
-PATH_TO_CKPT = 'downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'
-
-# List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = os.path.join('utils', 'mscoco_label_map.pbtxt')
-
+# Constants for processing video.
 NUM_CLASSES = 90
-
 PROCESSING_FRAME_RATE = 5
 
-clear_files()
+def main():
+    # Set up data directory, clear old generated data files.
+    clear_files()
+    if not os.path.exists(GENERATED_DATA_DIRECTORY):
+        os.makedirs(GENERATED_DATA_DIRECTORY)
 
-if not os.path.exists('downloaded_models'):
-    os.makedirs('downloaded_models')
+    # Download model
+    if not os.path.exists(MODEL_DIRECTORY):
+        os.makedirs(MODEL_DIRECTORY)
+    if not os.path.exists(PATH_TO_CKPT):
+        opener = urllib.request.URLopener()
+        opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, PATH_TO_TARFILE)
+        tar_file = tarfile.open(PATH_TO_TARFILE)
+        for file in tar_file.getmembers():
+            file_name = os.path.basename(os.path.join(MODEL_DIRECTORY, file.name))
+            if 'frozen_inference_graph.pb' in file_name:
+                tar_file.extract(file, os.path.join(os.getcwd(), MODEL_DIRECTORY))
+        print('Download complete')
+    else:
+        print('Model already exists')
 
-if not os.path.exists('../data'):
-    os.makedirs('../data')
+    # Load a (frozen) tensorflow model into memory.
+    detection_graph = tf.Graph()
+    with detection_graph.as_default():
+        od_graph_def = tf.GraphDef()
+        with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+            serialized_graph = fid.read()
+            od_graph_def.ParseFromString(serialized_graph)
+            tf.import_graph_def(od_graph_def, name='')
 
-# Download Model
-if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
-    print('Downloading the model')
-    opener = urllib.request.URLopener()
-    opener.retrieve(DOWNLOAD_BASE + MODEL_FILE, 'downloaded_models/' + MODEL_FILE)
-    tar_file = tarfile.open('downloaded_models/' + MODEL_FILE)
-    for file in tar_file.getmembers():
-        file_name = os.path.basename('downloaded_models/' + file.name)
-        if 'frozen_inference_graph.pb' in file_name:
-            tar_file.extract(file, os.getcwd() + '/downloaded_models')
-    print('Download complete')
-else:
-    print('Model already exists')
+    # Label maps map indices to category names.
+    label_map = label_map_util.load_labelmap(MSCOCO_LABELS)
+    categories =\
+        label_map_util.convert_label_map_to_categories(label_map,
+                                                       max_num_classes=NUM_CLASSES,
+                                                       use_display_name=True)
+    category_index = label_map_util.create_category_index(categories)
 
-# ## Load a (frozen) Tensorflow model into memory.
+    # Initialize the video capture.
+    cap = cv2.VideoCapture(VIDEO_INPUT)
+    fps = FPS().start()
 
-detection_graph = tf.Graph()
-with detection_graph.as_default():
-    od_graph_def = tf.GraphDef()
-    with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
-        serialized_graph = fid.read()
-        od_graph_def.ParseFromString(serialized_graph)
-        tf.import_graph_def(od_graph_def, name='')
+    # Open the data files.
+    state = open(STATE_FILE, 'w+')
+    with open(RECORDS_FILE, 'w+') as records:
+        records.seek(0)
+        records.write('')
 
-# ## Loading label map
-# Label maps map indices to category names, so that when our convolution network predicts `5`, we know that this corresponds to `airplane`.  Here we use internal utility functions, but anything that returns a dictionary mapping integers to appropriate string labels would be fine
+    # Run the tensorflow session
+    with detection_graph.as_default():
+        with tf.Session(graph=detection_graph) as sess:
+            frame = 0
+            has_next = True
+            num_image_stored = 0
 
-label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
-                                                            use_display_name=True)
-category_index = label_map_util.create_category_index(categories)
-
-# intializing the web camera device
-cap = cv2.VideoCapture(VIDEO_INPUT)
-fps = FPS().start()
-
-state = open('../data/state.txt', 'w+')
-with open('../data/records.txt', 'w+') as records:
-    records.seek(0)
-    records.write('')
-
-# Running the tensorflow session
-with detection_graph.as_default():
-    with tf.Session(graph=detection_graph) as sess:
-        frame = 0
-        ret = True
-        num_times = 0
-        while (ret):
-            ret, image_np = cap.read()
-            if not ret:
-                break
-            if frame % PROCESSING_FRAME_RATE == 0:
-                if num_times < 10:
-                    cv2.imwrite('../data/camera-image.jpg', image_np)
-                    num_times += 1
-                # image_np = imutils.resize(image_np, width=200)
-                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-                image_np_expanded = np.expand_dims(image_np, axis=0)
-                image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-                # Each box represents a part of the image where a particular object was detected.
-                boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-                # Each score represent how level of confidence for each of the objects.
-                # Score is shown on the result image, together with the class label.
-                scores = detection_graph.get_tensor_by_name('detection_scores:0')
-                classes = detection_graph.get_tensor_by_name('detection_classes:0')
-                num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-                # Actual detection.
-                # t = time.clock()
-                (boxes, scores, classes, num_detections) = sess.run(
-                    [boxes, scores, classes, num_detections],
-                    feed_dict={image_tensor: image_np_expanded})
-                # Visualization of the results of a detection.
-                # print("CNN time: ", time.clock()-t)
-
-                # t = time.clock()
-                coordinates = vis_util.visualize_boxes_and_labels_on_image_array(
-                    image_np,
-                    np.squeeze(boxes),
-                    np.squeeze(classes).astype(np.int32),
-                    np.squeeze(scores),
-                    category_index,
-                    use_normalized_coordinates=True,
-                    line_thickness=8)
-                #      plt.figure(figsize=IMAGE_SIZE)
-                #      plt.imshow(image_np)
-                # print("visualizing time: ", time.clock()-t)
-                # t = time.clock()
-
-                # print(coordinates)
-                customers_count = len(coordinates)
-
-                now = datetime.datetime.now()
-                timestamp = time.time()
-                record = '%i  %s\n' % (customers_count, str(now))
-                state_record = '%i  %s\n' % (customers_count, str(timestamp))
-
-
-                with open('../data/records.txt', 'a+') as records:
-                    records.write(record)
-
-                heatmap = HeatMap(width=50, height=30)
-                for coordinate in coordinates:
-                    heatmap.update(coordinate)
-
-                state.seek(0)
-                state.write(state_record)
-
-                cv2.imshow('image', cv2.resize(image_np,
-                                                    (int(image_np.shape[1]/2),
-                                                    int(image_np.shape[0]/2))))
-                if cv2.waitKey(25) & 0xFF == ord('q'):
-                    cv2.destroyAllWindows()
-                    cap.release()
+            while True:
+                # Check if video stream has next image.
+                has_next, image = cap.read()
+                if not has_next:
                     break
-                fps.update()
-                # print("rest time: ", time.clock()-t)
-            frame += 1
-state.close()
+
+                # Process every few frames.
+                if frame % PROCESSING_FRAME_RATE == 0:
+
+                    # Store image for heat map.
+                    if num_image_stored < 10:
+                        cv2.imwrite(IMAGE_FILE, image)
+                        num_image_stored += 1
+
+                    # Expand dimensions since the model expects images to have
+                    # shape: [1, None, None, 3]
+                    image_expanded = np.expand_dims(image, axis=0)
+                    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                    # Each box represents a part of the image where a particular object was detected.
+                    boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                    # Each score represent how level of confidence for each of the objects.
+                    # The score is shown on the result image, together with the class label.
+                    scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                    classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+                    # Actual detection.
+                    (boxes, scores, classes, num_detections) =\
+                        sess.run([boxes, scores, classes, num_detections],
+                                 feed_dict={image_tensor: image_expanded})
+
+                    # Visualization of the bounding boxes.
+                    coordinates = visualize_boxes_and_labels_on_image_array(
+                        image,
+                        np.squeeze(boxes),
+                        np.squeeze(classes).astype(np.int32),
+                        np.squeeze(scores),
+                        category_index,
+                        use_normalized_coordinates=True,
+                        line_thickness=8)
+
+                    # Store information for frontend.
+                    customers_count = len(coordinates)
+                    now = datetime.datetime.now()
+                    timestamp = time.time()
+                    record = '%i  %s\n' % (customers_count, str(now))
+                    state_record = '%i  %s\n' % (customers_count, str(timestamp))
+                    with open(RECORDS_FILE, 'a+') as records:
+                        records.write(record)
+                    heatmap = HeatMap(width=50, height=30)
+                    for coordinate in coordinates:
+                        heatmap.update(coordinate)
+                    state.seek(0)
+                    state.write(state_record)
+
+                    # Display image.
+                    cv2.imshow('image',
+                               cv2.resize(image, (int(image.shape[1]/2),
+                                                  int(image.shape[0]/2))))
+                    if cv2.waitKey(25) & 0xFF == ord('q'):
+                        cv2.destroyAllWindows()
+                        cap.release()
+                        break
+                    fps.update()
+                frame += 1
+    state.close()
+
+if __name__ == '__main__':
+    main()
