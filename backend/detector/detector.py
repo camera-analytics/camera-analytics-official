@@ -3,10 +3,6 @@ import numpy as np
 import os
 import tarfile
 import tensorflow as tf
-# import zipfile
-#
-# from collections import defaultdict
-# from io import StringIO
 
 from utils import label_map_util
 from utils.heatmap import HeatMap
@@ -19,7 +15,6 @@ from imutils.video import FPS
 import cv2
 
 def main(args):
-    """ Setup """
     if args.videopath:
         # Playback video file
         VIDEO_INPUT = args.videopath
