@@ -14,26 +14,26 @@ from io import StringIO
 
 from utils import label_map_util
 from utils.heatmap import HeatMap
+from evaluation.evaluation_helper import write_prediction
 
 from utils import visualization_utils as vis_util
 from utils.fileio import clear_files
+from utils.args import parse_args
 from imutils.video import FPS
 import imutils
 import cv2
 import time
 
-# VIDEO_INPUT = './test.mp4'
-VIDEO_INPUT = 0
+args = parse_args()
 
-# # Model preparation
-# Any model exported using the `export_inference_graph.py` tool can be loaded here simply by changing `PATH_TO_CKPT` to point to a new .pb file.
-# By default we use an "SSD with Mobilenet" model here. See the [detection model zoo](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/detection_model_zoo.md) for a list of other models that can be run out-of-the-box with varying speeds and accuracies.
+if args.videopath:
+    VIDEO_INPUT = args.videopath
+else:
+    VIDEO_INPUT = 0
 
-# What model to download.
-# MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
-MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
-# faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
+# ## If you are using a custom TensorFlow model, you will need to update PATH_TO_CKPT (can be any .pb file exported using the `export_inference_graph` tool), PATH_TO_LABELS, and NUM_CLASSES
 
+MODEL_NAME = args.model
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
@@ -45,15 +45,23 @@ PATH_TO_LABELS = os.path.join('data', 'mscoco_label_map.pbtxt')
 
 NUM_CLASSES = 90
 
-PROCESSING_FRAME_RATE = 5
+PROCESSING_FRAME_RATE = args.skip_frames + 1
 
-clear_files()
+clear_files() # clears data from previous detector instances
 
 if not os.path.exists('downloaded_models'):
     os.makedirs('downloaded_models')
 
 if not os.path.exists('../data'):
     os.makedirs('../data')
+
+if args.save_predictions:
+    if not os.path.exists('evaluation/eval-data'):
+        os.makedirs('../eval-data')
+    if not os.path.exists('evaluation/detection-results'):
+        os.makedirs('../detection-results')
+    if not os.path.exists('evaluation/images-optional'):
+        os.makedirs('../images-optional')
 
 # Download Model
 if not os.path.exists('downloaded_models/' + MODEL_NAME + '/frozen_inference_graph.pb'):
@@ -83,14 +91,14 @@ with detection_graph.as_default():
 # Label maps map indices to category names, so that when our convolution network predicts `5`, we know that this corresponds to `airplane`.  Here we use internal utility functions, but anything that returns a dictionary mapping integers to appropriate string labels would be fine
 
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES,
-                                                            use_display_name=True)
+categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
 # intializing the web camera device
 cap = cv2.VideoCapture(VIDEO_INPUT)
 fps = FPS().start()
 
+# write state and records for backend API
 state = open('../data/state.txt', 'w+')
 with open('../data/records.txt', 'w+') as records:
     records.seek(0)
@@ -107,9 +115,13 @@ with detection_graph.as_default():
             if not ret:
                 break
             if frame % PROCESSING_FRAME_RATE == 0:
-                if num_times < 10:
+                if num_times < 10: # update image for first 10 frames (the first few frames tend to be black)
                     cv2.imwrite('../data/camera-image.jpg', image_np)
                     num_times += 1
+
+                if args.save_predictions:
+                    cv2.imwrite('evaluation/mAP/input/images-optional/{}.jpg'.format(int(frame/PROCESSING_FRAME_RATE)), image_np)
+
                 # image_np = imutils.resize(image_np, width=200)
                 # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
                 image_np_expanded = np.expand_dims(image_np, axis=0)
@@ -126,10 +138,14 @@ with detection_graph.as_default():
                 (boxes, scores, classes, num_detections) = sess.run(
                     [boxes, scores, classes, num_detections],
                     feed_dict={image_tensor: image_np_expanded})
-                # Visualization of the results of a detection.
-                # print("CNN time: ", time.clock()-t)
 
-                # t = time.clock()
+
+                if args.save_predictions:
+                    write_prediction(int(frame/PROCESSING_FRAME_RATE), np.squeeze(boxes),
+                                     np.squeeze(scores),
+                                     height=image_np_expanded.shape[1],
+                                     width=image_np_expanded.shape[2])
+
                 coordinates = vis_util.visualize_boxes_and_labels_on_image_array(
                     image_np,
                     np.squeeze(boxes),
@@ -138,10 +154,6 @@ with detection_graph.as_default():
                     category_index,
                     use_normalized_coordinates=True,
                     line_thickness=8)
-                #      plt.figure(figsize=IMAGE_SIZE)
-                #      plt.imshow(image_np)
-                # print("visualizing time: ", time.clock()-t)
-                # t = time.clock()
 
                 # print(coordinates)
                 customers_count = len(coordinates)
@@ -152,16 +164,18 @@ with detection_graph.as_default():
                 state_record = '%i  %s\n' % (customers_count, str(timestamp))
 
 
+                # Save records for backend API
                 with open('../data/records.txt', 'a+') as records:
                     records.write(record)
 
-                heatmap = HeatMap(width=50, height=30)
+                # Store heatmap
+                heatmap = HeatMap(width=50, height=30) # width and height define the resolution of the heatmap
                 for coordinate in coordinates:
                     heatmap.update(coordinate)
-
                 state.seek(0)
                 state.write(state_record)
 
+                # Display image
                 cv2.imshow('image', cv2.resize(image_np,
                                                     (int(image_np.shape[1]/2),
                                                     int(image_np.shape[0]/2))))
@@ -170,6 +184,5 @@ with detection_graph.as_default():
                     cap.release()
                     break
                 fps.update()
-                # print("rest time: ", time.clock()-t)
             frame += 1
 state.close()

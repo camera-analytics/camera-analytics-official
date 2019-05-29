@@ -3,3 +3,4 @@ __pycache__
 videos
 downloaded_models
 data
+.DS_Store
