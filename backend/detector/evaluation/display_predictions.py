@@ -1,6 +1,17 @@
+"""
+Display bounding boxes on the screen of the ground-truth labels located
+in `evaluation/eval-data/ground-truth` and the detection labels located in
+`evaluation/eval-data/detection-results`. It uses the images provided in
+`evaluation/eval-data/images`.
+
+Assuming files are number 0.txt, 1.txt, 2.txt, ..., change NUM_IMAGES to the
+number of the number of images to evaluate.
+"""
+
 import numpy as np
 import cv2
 
+# TODO: change NUM_IMAGES
 NUM_IMAGES = 600
 PATH = 'eval-data/'
 
@@ -22,7 +33,7 @@ def get_data(folder, i):
 # loop over the example detections
 for i in range(NUM_IMAGES):
     # load the image
-    image = cv2.imread('{}images-optional/{}.jpg'.format(PATH, i))
+    image = cv2.imread('{}images/{}.jpg'.format(PATH, i))
 
     # load data
     detection_data = get_data('detection-results', i)

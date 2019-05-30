@@ -91,7 +91,7 @@ def main(args):
                         num_times += 1
 
                     if args.save_predictions:
-                        cv2.imwrite('evaluation/eval-data/images-optional/{}.jpg'.format(int(frame/PROCESSING_FRAME_RATE)), image_np)
+                        cv2.imwrite('evaluation/eval-data/images/{}.jpg'.format(int(frame/PROCESSING_FRAME_RATE)), image_np)
 
                     # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
                     image_np_expanded = np.expand_dims(image_np, axis=0)
