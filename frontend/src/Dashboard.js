@@ -2,11 +2,6 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { Column, Columns } from "re-bulma";
 import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  Tooltip,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -15,6 +10,7 @@ import {
 } from "recharts";
 import DataService from "./DataService";
 import moment from "moment";
+import Iframe from 'react-iframe'
 
 const AppContainer = styled.div`
   padding: 2%;
@@ -46,19 +42,6 @@ const Title = styled.h1`
   text-align: center;
 `;
 
-const HeatmapTitle = styled.h1`
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 1.5rem;
-  color: #103fb9;
-  text-align: center;
-
-  &:hover {
-    opacity: 0.5;
-    transition: all 300ms ease;
-  }
-`;
-
 const ChartTitle = styled.h1`
   font-size: 1.5rem;
   padding: 2%;
@@ -73,10 +56,6 @@ const Data = styled.div`
   font-size: ${props => props.sz};
   text-align: center;
   font-weight: 800;
-`;
-const HeatMap = styled.div`
-  width: 100%;
-  border: 1px solid #d8dbe4;
 `;
 
 class Dashboard extends Component {
@@ -125,14 +104,14 @@ class Dashboard extends Component {
             graphData: [...prevState.graphData, countData]
           }));
         } else if (
-          this.state.graphData[this.state.graphData.length - 1].number !=
+          this.state.graphData[this.state.graphData.length - 1].number !==
           countData.number
         ) {
           this.setState(prevState => ({
             graphData: [...prevState.graphData, countData]
           }));
         }
-        console.log(this.state.graphData);
+        // console.log(this.state.graphData);
       });
     };
 
@@ -183,9 +162,16 @@ class Dashboard extends Component {
               </ResponsiveContainer>
               <br />
               <br />
-              <a href="/heatmap.html">
-                <HeatmapTitle>View Heatmap</HeatmapTitle>
-              </a>
+              <ChartTitle> Heatmap </ChartTitle>
+              <div id="heatmap-container">
+              <Iframe url="heatmap.html"
+                      width="442px"
+                      height="253px"
+                      id="heatmap-iframe"
+                      className="myClassname"
+                      display="initial"
+                      position="relative"/>
+              </div>
             </Column>
             <Column>
               <Card>

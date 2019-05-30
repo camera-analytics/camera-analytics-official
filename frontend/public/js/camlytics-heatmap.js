@@ -5,7 +5,6 @@ function $(id) {
 return document.getElementById(id);
 }
 
-
 // create a heatmap instance
 var heatmap = h337.create({
 container: document.getElementById("heatmapContainer"),
@@ -21,10 +20,10 @@ var height = +window.getComputedStyle(document.body).height.replace(/px/, "");
 // fetch
 let dataService = new DataService()
 
-let RADIUS_SIZE = 30
+const RADIUS_SIZE = 30
 
-const IMAGE_HEIGHT = 360
-const IMAGE_WIDTH = 640
+const IMAGE_WIDTH = 432
+const IMAGE_HEIGHT = 9/16 * IMAGE_WIDTH
 
 let updatePositions = () => {
   var positionData = []
@@ -65,7 +64,7 @@ let updatePositions = () => {
 var date = new Date().getTime()
 $("heatmapContainer").style.background = "url('http://localhost:5000/api/image?date="
                                      + date + "')"
-$("heatmapContainer").style.backgroundSize = "640px 360px"
+$("heatmapContainer").style.backgroundSize = "432px 243px"
 
 updatePositions()
 setInterval(() => {

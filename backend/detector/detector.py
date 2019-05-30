@@ -3,6 +3,7 @@ import numpy as np
 import os
 import tarfile
 import tensorflow as tf
+import cv2
 
 from utils import label_map_util
 from utils.heatmap import HeatMap
@@ -12,16 +13,16 @@ from utils import visualization_utils as vis_util
 from utils.fileio import clear_generated_data_files, create_evaluation_folder, GENERATED_DATA_DIRECTORY, STATE_FILE, RECORDS_FILE, POSITIONS_FILE, IMAGE_FILE
 from utils.args import parse_args
 from imutils.video import FPS
-import cv2
 
 def main(args):
     if args.videopath:
-        # Playback video file
+        # Use playback video file.
         VIDEO_INPUT = args.videopath
     else:
-        # Use webcam
+        # Use webcam.
         VIDEO_INPUT = 0
 
+    # Download model if not downloaded.
     MODEL_DIRECTORY = 'downloaded_models'
     MODEL_NAME = args.model
     PATH_TO_CKPT = os.path.join(MODEL_DIRECTORY, MODEL_NAME, 'frozen_inference_graph.pb')
