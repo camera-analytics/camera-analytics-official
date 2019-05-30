@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import DataService from "./DataService";
 import moment from "moment";
-import Iframe from 'react-iframe'
+import Iframe from "react-iframe";
 
 const AppContainer = styled.div`
   padding: 2%;
@@ -136,9 +136,10 @@ class Dashboard extends Component {
       <div>
         <AppContainer>
           <Columns>
-            <Column size="isTwoThirds">
-              <ChartTitle> Customers in Store </ChartTitle>
-              <ResponsiveContainer width="95%" height={400}>
+            <Column>
+              <ChartTitle> Customers </ChartTitle>
+
+              <ResponsiveContainer width="95%" height={253}>
                 <ScatterChart>
                   <XAxis
                     dataKey="time"
@@ -160,30 +161,38 @@ class Dashboard extends Component {
                   />
                 </ScatterChart>
               </ResponsiveContainer>
-              <br />
-              <br />
+            </Column>
+            <Column>
               <ChartTitle> Heatmap </ChartTitle>
-              <div id="heatmap-container">
-              <Iframe url="heatmap.html"
-                      width="442px"
-                      height="253px"
-                      id="heatmap-iframe"
-                      className="myClassname"
-                      display="initial"
-                      position="relative"/>
+              <div id="heatmap-container" className="iframe">
+                <Iframe
+                  url="heatmap.html"
+                  width="442px"
+                  height="253px"
+                  id="heatmap-iframe"
+                  display="initial"
+                  position="relative"
+                  frameBorder="2"
+                />
               </div>
             </Column>
+          </Columns>
+          <Columns>
             <Column>
               <Card>
                 <Title>Active Customers</Title>
                 <Data sz="3rem">{this.state.currentCustomerCount.count}</Data>
               </Card>
+            </Column>
+            <Column>
               <Card>
                 <Title>Max Number Customers</Title>
                 <Data sz="3rem">{this.state.maxCount}</Data>
               </Card>
+            </Column>
+            <Column>
               <Card>
-                <Title>Revenue per Customer</Title>
+                <Title>Revenue / Customer</Title>
                 <Data sz="3rem">${Math.floor(1000 / this.state.maxCount)}</Data>
                 <Data sz="1em">$1000/{this.state.maxCount}</Data>
               </Card>

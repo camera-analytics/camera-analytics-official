@@ -11,10 +11,12 @@ a {
   text-decoration: none;
 }
 
-#heatmap-iframe {
-  border: none
+.iframe {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
 }
 
 #heatmap-container {
-  text-align: center
+  text-align: center;
 }
