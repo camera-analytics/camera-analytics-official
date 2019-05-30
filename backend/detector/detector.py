@@ -10,7 +10,7 @@ from utils.heatmap import HeatMap
 from evaluation.evaluation_helper import write_prediction
 
 from utils import visualization_utils as vis_util
-from utils.fileio import clear_generated_data_files, create_evaluation_folder, GENERATED_DATA_DIRECTORY, STATE_FILE, RECORDS_FILE, POSITIONS_FILE, IMAGE_FILE
+from utils.fileio import clear_generated_data_files, create_evaluation_folder, download_model, GENERATED_DATA_DIRECTORY, STATE_FILE, RECORDS_FILE, POSITIONS_FILE, IMAGE_FILE
 from utils.args import parse_args
 from imutils.video import FPS
 
