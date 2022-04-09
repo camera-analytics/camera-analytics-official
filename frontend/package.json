@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "insert-css": "^2.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "re-bulma": "^0.4.6",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",
